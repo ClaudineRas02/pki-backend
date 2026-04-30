@@ -1,18 +1,17 @@
 import {
+  countChildCAs,
+  countLinkedCertificates,
   createCA,
+  deleteCA,
   findCAById,
   getTrustChain,
   listCAs,
+  updateCA,
 } from "../models/caModel.js";
+import { createHttpError } from "../utils/httpError.js";
 
 const ROOT_TYPE = "ROOT";
 const INTERMEDIATE_TYPE = "INTERMEDIATE";
-
-const createHttpError = (status, message) => {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-};
 
 //test if empty name
 const assertName = (name) => {
@@ -35,6 +34,15 @@ const assertParentForIntermediate = async (parentCaId) => {
   }
 
   return parent;
+};
+
+const assertCAExists = async (caId) => {
+  const ca = await findCAById(caId);
+  if (!ca) {
+    throw createHttpError(404, "CA introuvable.");
+  }
+
+  return ca;
 };
 
 // payload = ca info
@@ -87,12 +95,7 @@ export const importExistingCA = async (payload) => {
 };
 
 export const exportCA = async (caId) => {
-  const ca = await findCAById(caId);
-  if (!ca) {
-    throw createHttpError(404, "CA introuvable.");
-  }
-
-  return ca;
+  return assertCAExists(caId);
 };
 
 export const getCAChain = async (caId) => {
@@ -109,4 +112,62 @@ export const getCAChain = async (caId) => {
 
 export const getAllCAs = async () => {
   return listCAs();
+};
+
+export const updateExistingCA = async (caId, payload) => {
+  const existingCA = await assertCAExists(caId);
+
+  const nextName = payload.name !== undefined ? payload.name : existingCA.name;
+  assertName(nextName);
+
+  const nextCaType = payload.ca_type || existingCA.ca_type;
+  const nextParentCaId =
+    payload.parent_ca_id !== undefined ? payload.parent_ca_id : existingCA.parent_ca_id;
+
+  if (nextParentCaId === caId) {
+    throw createHttpError(400, "Une CA ne peut pas etre sa propre parente.");
+  }
+
+  if (nextCaType === ROOT_TYPE && nextParentCaId) {
+    throw createHttpError(400, "Une Root CA ne doit pas avoir de parent.");
+  }
+
+  if (nextCaType === INTERMEDIATE_TYPE) {
+    await assertParentForIntermediate(nextParentCaId);
+  }
+
+  return updateCA(caId, {
+    name: String(nextName).trim(),
+    caType: nextCaType,
+    parentCaId: nextParentCaId ?? null,
+    privateKey:
+      payload.private_key !== undefined ? payload.private_key : existingCA.private_key,
+    certificate:
+      payload.certificate !== undefined ? payload.certificate : existingCA.certificate,
+    expiresAt:
+      payload.expires_at !== undefined ? payload.expires_at : existingCA.expires_at,
+    status: payload.status || existingCA.status,
+  });
+};
+
+export const deleteExistingCA = async (caId) => {
+  await assertCAExists(caId);
+
+  const childCAs = await countChildCAs(caId);
+  if (childCAs > 0) {
+    throw createHttpError(
+      409,
+      "Suppression impossible: cette CA est parente d'autres certificate authorities.",
+    );
+  }
+
+  const linkedCertificates = await countLinkedCertificates(caId);
+  if (linkedCertificates > 0) {
+    throw createHttpError(
+      409,
+      "Suppression impossible: cette CA est encore liee a des certificats.",
+    );
+  }
+
+  return deleteCA(caId);
 };

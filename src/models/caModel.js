@@ -48,6 +48,76 @@ export const findCAById = async (caId) => {
   return rows[0] || null;
 };
 
+export const updateCA = async (
+  caId,
+  {
+    name,
+    caType,
+    parentCaId,
+    privateKey,
+    certificate,
+    expiresAt,
+    status,
+  },
+) => {
+  const { rows } = await pool.query(
+    `
+      UPDATE certificate_authorities
+      SET name = $2,
+          ca_type = $3,
+          parent_ca_id = $4,
+          private_key = $5,
+          certificate = $6,
+          expires_at = $7,
+          status = $8
+      WHERE ca_id = $1
+      RETURNING *
+    `,
+    [caId, name, caType, parentCaId, privateKey, certificate, expiresAt, status],
+  );
+
+  return rows[0] || null;
+};
+
+export const deleteCA = async (caId) => {
+  const { rows } = await pool.query(
+    `
+      DELETE FROM certificate_authorities
+      WHERE ca_id = $1
+      RETURNING *
+    `,
+    [caId],
+  );
+
+  return rows[0] || null;
+};
+
+export const countChildCAs = async (caId) => {
+  const { rows } = await pool.query(
+    `
+      SELECT COUNT(*)::integer AS total
+      FROM certificate_authorities
+      WHERE parent_ca_id = $1
+    `,
+    [caId],
+  );
+
+  return rows[0].total;
+};
+
+export const countLinkedCertificates = async (caId) => {
+  const { rows } = await pool.query(
+    `
+      SELECT COUNT(*)::integer AS total
+      FROM certificates
+      WHERE ca_id = $1
+    `,
+    [caId],
+  );
+
+  return rows[0].total;
+};
+
 export const listCAs = async () => {
   const { rows } = await pool.query(`
     SELECT *
