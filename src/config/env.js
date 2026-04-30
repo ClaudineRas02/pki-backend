@@ -1,23 +1,7 @@
-import express from "express";
-import cors from "cors";
-import morgan from "morgan";
-import indexRoute from "./routes/indexRoute.js";
+import "dotenv/config";
 
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(morgan("dev"));
-
-app.use(
-  cors({
-    origin: ["exp://10.104.87.134:8081"],
-    credentials: true,
-  }),
-);
-
-app.use("/api", indexRoute);
-
-export default app;
+export const env = {
+  ip: process.env.IP || "0.0.0.0",
+  port: Number(process.env.PORT || 3000),
+  databaseUrl: process.env.DATABASE_URL || "",
+};
