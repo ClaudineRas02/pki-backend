@@ -1,8 +1,10 @@
 import { findCAById } from "../models/caModel.js";
 import {
   createCertificate,
+  deleteCertificate,
   findCertificateById,
   listCertificates,
+  updateCertificate,
   updateCertificateCA,
 } from "../models/certModel.js";
 import {
@@ -11,6 +13,12 @@ import {
   computeValidity,
 } from "../utils/certificateFormats.js";
 import { createHttpError } from "../utils/httpError.js";
+
+const assertCommonName = (commonName) => {
+  if (!commonName || !String(commonName).trim()) {
+    throw createHttpError(400, "Le common_name est obligatoire.");
+  }
+};
 
 const formatCertificateDetails = (certificate) => {
   return {
@@ -113,4 +121,44 @@ export const getCertificateDetails = async (certId) => {
 
 export const getAllCertificates = async () => {
   return listCertificates();
+};
+
+export const updateExistingCertificate = async (certId, payload) => {
+  const existingCertificate = await assertCertificateExists(certId);
+  const nextCommonName =
+    payload.common_name !== undefined
+      ? payload.common_name
+      : existingCertificate.common_name;
+  assertCommonName(nextCommonName);
+
+  const nextCaId =
+    payload.ca_id !== undefined ? payload.ca_id : existingCertificate.ca_id;
+
+  if (nextCaId !== null && nextCaId !== undefined) {
+    await assertCAExists(nextCaId);
+  }
+
+  return updateCertificate(certId, {
+    commonName: String(nextCommonName).trim(),
+    certType:
+      payload.cert_type !== undefined
+        ? String(payload.cert_type).trim().toUpperCase()
+        : existingCertificate.cert_type,
+    algorithm:
+      payload.algorithm !== undefined
+        ? String(payload.algorithm).trim().toUpperCase()
+        : existingCertificate.algorithm,
+    expiresAt:
+      payload.expires_at !== undefined ? payload.expires_at : existingCertificate.expires_at,
+    status:
+      payload.status !== undefined
+        ? String(payload.status).trim().toUpperCase()
+        : existingCertificate.status,
+    caId: nextCaId ?? null,
+  });
+};
+
+export const deleteExistingCertificate = async (certId) => {
+  await assertCertificateExists(certId);
+  return deleteCertificate(certId);
 };

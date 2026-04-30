@@ -1,11 +1,13 @@
 import { handleError } from "../utils/handleError.js";
 import {
+  deleteExistingCertificate,
   exportCertificate,
   generateCertificate,
   getAllCertificates,
   getCertificateDetails,
   importExistingCertificate,
   signCertificate,
+  updateExistingCertificate,
 } from "../services/certService.js";
 
 export const listCertificatesController = async (_req, res) => {
@@ -57,6 +59,24 @@ export const getCertificateDetailsController = async (req, res) => {
   try {
     const details = await getCertificateDetails(req.params.certId);
     res.status(200).json(details);
+  } catch (error) {
+    handleError(error, res);
+  }
+};
+
+export const updateCertificateController = async (req, res) => {
+  try {
+    const certificate = await updateExistingCertificate(req.params.certId, req.body);
+    res.status(200).json(certificate);
+  } catch (error) {
+    handleError(error, res);
+  }
+};
+
+export const deleteCertificateController = async (req, res) => {
+  try {
+    const certificate = await deleteExistingCertificate(req.params.certId);
+    res.status(200).json(certificate);
   } catch (error) {
     handleError(error, res);
   }

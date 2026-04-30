@@ -52,6 +52,7 @@ export const listCertificates = async () => {
   return rows;
 };
 
+//signer cert en definissant son ca
 export const updateCertificateCA = async (certId, caId) => {
   const { rows } = await pool.query(
     `
@@ -63,6 +64,41 @@ export const updateCertificateCA = async (certId, caId) => {
       RETURNING *
     `,
     [certId, caId],
+  );
+
+  return rows[0] || null;
+};
+
+export const updateCertificate = async (
+  certId,
+  { commonName, certType, algorithm, expiresAt, status, caId },
+) => {
+  const { rows } = await pool.query(
+    `
+      UPDATE certificates
+      SET common_name = $2,
+          cert_type = $3,
+          algorithm = $4,
+          expires_at = $5,
+          status = $6,
+          ca_id = $7
+      WHERE cert_id = $1
+      RETURNING *
+    `,
+    [certId, commonName, certType, algorithm, expiresAt, status, caId],
+  );
+
+  return rows[0] || null;
+};
+
+export const deleteCertificate = async (certId) => {
+  const { rows } = await pool.query(
+    `
+      DELETE FROM certificates
+      WHERE cert_id = $1
+      RETURNING *
+    `,
+    [certId],
   );
 
   return rows[0] || null;
