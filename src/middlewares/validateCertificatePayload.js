@@ -3,6 +3,15 @@ import { createHttpError } from "../utils/httpError.js";
 const ALLOWED_CERT_TYPES = ["SERVER", "CLIENT", "WILDCARD"];
 const ALLOWED_STATUSES = ["VALID", "EXPIRED", "REVOKED"];
 
+const validateValidityDays = (body) => {
+  if (
+    body.validity_days !== undefined &&
+    (!Number.isInteger(Number(body.validity_days)) || Number(body.validity_days) <= 0)
+  ) {
+    throw createHttpError(400, "validity_days doit etre un entier positif.");
+  }
+};
+
 const validateRequiredCertificateFields = (body, { requireCaId = false } = {}) => {
   if (!body.common_name || !String(body.common_name).trim()) {
     throw createHttpError(400, "Le common_name est obligatoire.");
@@ -29,6 +38,8 @@ const validateRequiredCertificateFields = (body, { requireCaId = false } = {}) =
       `status invalide. Valeurs attendues: ${ALLOWED_STATUSES.join(", ")}.`,
     );
   }
+
+  validateValidityDays(body);
 
   if (requireCaId) {
     const caId = Number(body.ca_id);
