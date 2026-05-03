@@ -48,7 +48,11 @@ export const importCertificateController = async (req, res) => {
 
 export const exportCertificateController = async (req, res) => {
   try {
-    const exported = await exportCertificate(req.params.certId, req.query.format);
+    const exported = await exportCertificate(
+      req.params.certId,
+      req.query.format,
+      req.query.passphrase,
+    );
     res.status(200).json(exported);
   } catch (error) {
     handleError(error, res);
