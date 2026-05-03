@@ -8,6 +8,14 @@ export const createCA = async ({
   certificate = null,
   expiresAt = null,
   status = "VALID",
+  subjectDn = null,
+  issuerDn = null,
+  serialNumber = null,
+  fingerprintSha256 = null,
+  keyPath = null,
+  certPath = null,
+  serialPath = null,
+  sourceFormat = null,
 }) => {
   const sql = `
         INSERT INTO certificate_authorities (
@@ -17,9 +25,17 @@ export const createCA = async ({
           private_key,
           certificate,
           expires_at,
-          status
+          status,
+          subject_dn,
+          issuer_dn,
+          serial_number,
+          fingerprint_sha256,
+          key_path,
+          cert_path,
+          serial_path,
+          source_format
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         RETURNING *
     `;
 
@@ -31,6 +47,14 @@ export const createCA = async ({
     certificate,
     expiresAt,
     status,
+    subjectDn,
+    issuerDn,
+    serialNumber,
+    fingerprintSha256,
+    keyPath,
+    certPath,
+    serialPath,
+    sourceFormat,
   ]);
   return rows[0];
 };
@@ -58,6 +82,14 @@ export const updateCA = async (
     certificate,
     expiresAt,
     status,
+    subjectDn,
+    issuerDn,
+    serialNumber,
+    fingerprintSha256,
+    keyPath,
+    certPath,
+    serialPath,
+    sourceFormat,
   },
 ) => {
   const { rows } = await pool.query(
@@ -69,11 +101,36 @@ export const updateCA = async (
           private_key = $5,
           certificate = $6,
           expires_at = $7,
-          status = $8
+          status = $8,
+          subject_dn = $9,
+          issuer_dn = $10,
+          serial_number = $11,
+          fingerprint_sha256 = $12,
+          key_path = $13,
+          cert_path = $14,
+          serial_path = $15,
+          source_format = $16
       WHERE ca_id = $1
       RETURNING *
     `,
-    [caId, name, caType, parentCaId, privateKey, certificate, expiresAt, status],
+    [
+      caId,
+      name,
+      caType,
+      parentCaId,
+      privateKey,
+      certificate,
+      expiresAt,
+      status,
+      subjectDn,
+      issuerDn,
+      serialNumber,
+      fingerprintSha256,
+      keyPath,
+      certPath,
+      serialPath,
+      sourceFormat,
+    ],
   );
 
   return rows[0] || null;

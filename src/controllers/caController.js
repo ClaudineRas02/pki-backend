@@ -4,7 +4,8 @@ import {
   createIntermediateCA,
   createRootCA,
   deleteExistingCA,
-  exportCA,
+  exportCAArtifact,
+  getCAExportFile,
   getAllCAs,
   getCAChain,
   importExistingCA,
@@ -58,8 +59,17 @@ export const importCAController = async (req, res) => {
 
 export const exportCAController = async (req, res) => {
   try {
-    const ca = await exportCA(req.params.caId);
+    const ca = await exportCAArtifact(req.params.caId);
     res.status(200).json(ca);
+  } catch (error) {
+    handleError(error, res);
+  }
+};
+
+export const exportCAFileController = async (req, res) => {
+  try {
+    const file = await getCAExportFile(req.params.caId, req.params.fileKind);
+    res.download(file.filePath, file.filename);
   } catch (error) {
     handleError(error, res);
   }
