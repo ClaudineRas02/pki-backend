@@ -1,4 +1,5 @@
 import path from "path";
+import { listCAsSummary } from "../models/caModel.js";
 import {
   countChildCAs,
   countLinkedCertificates,
@@ -438,4 +439,9 @@ export const deleteExistingCA = async (caId) => {
   }
 
   return deleteCA(caId);
+};
+
+
+export const getCAsSummary = async () => {
+  return listCAsSummary();
 };

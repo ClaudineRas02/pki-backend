@@ -1,4 +1,5 @@
 import { handleError } from "../utils/handleError.js";
+import { getCAsSummary } from "../services/caService.js";
 
 import {
   createIntermediateCA,
@@ -88,6 +89,15 @@ export const deleteCAController = async (req, res) => {
   try {
     const ca = await deleteExistingCA(req.params.caId);
     res.status(200).json(ca);
+  } catch (error) {
+    handleError(error, res);
+  }
+};
+
+export const listCAsSummaryController = async (_req, res) => {
+  try {
+    const cas = await getCAsSummary();
+    res.status(200).json(cas);
   } catch (error) {
     handleError(error, res);
   }

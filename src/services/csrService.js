@@ -11,6 +11,7 @@ import {
   listCsrs,
   replaceCsrSans,
   updateCsr,
+  listCsrsSummary,
 } from "../models/csrModel.js";
 import { createHttpError } from "../utils/httpError.js";
 import { normalizeAlgorithmType } from "../utils/algorithm.js";
@@ -295,3 +296,8 @@ export const exportCsr = async (csrId) => {
     files,
   };
 };
+
+
+export const getCsrsSummary = async () => {
+  return listCsrsSummary();
+};  

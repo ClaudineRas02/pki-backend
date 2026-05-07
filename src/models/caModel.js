@@ -229,3 +229,13 @@ export const getTrustChain = async (caId) => {
 
   return rows;
 };
+
+export const listCAsSummary = async () => {
+  const { rows } = await pool.query(`
+    SELECT ca_id, name
+    FROM certificate_authorities
+    ORDER BY created_at DESC, ca_id DESC
+  `);
+
+  return rows;
+};

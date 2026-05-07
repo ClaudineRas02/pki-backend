@@ -128,3 +128,13 @@ export const replaceCsrSans = async (csrId, sanList = []) => {
     );
   }
 };
+
+export const listCsrsSummary = async () => {
+  const { rows } = await pool.query(`
+    SELECT csr_id, common_name
+    FROM certificate_signing_requests
+    ORDER BY created_at DESC, csr_id DESC
+  `);
+
+  return rows;
+};

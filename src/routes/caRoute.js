@@ -9,6 +9,7 @@ import {
   importCAController,
   listCAsController,
   updateCAController,
+  listCAsSummaryController
 } from "../controllers/caController.js";
 import { validateIdParam } from "../middlewares/validateIdParam.js";
 import {
@@ -27,6 +28,7 @@ router.post(
   mapCAUploadFilesToBody,
   importCAController,
 );
+router.get("/summary", listCAsSummaryController);
 router.get("/:caId/chain", validateIdParam("caId"), getTrustChainController);
 router.get("/:caId/export", validateIdParam("caId"), exportCAController);
 router.get(

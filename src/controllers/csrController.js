@@ -5,6 +5,7 @@ import {
   getAllCsrs,
   importExistingCsr,
   signCsrWithCa,
+  getCsrsSummary,
 } from "../services/csrService.js";
 
 export const listCsrsController = async (_req, res) => {
@@ -47,6 +48,15 @@ export const exportCsrController = async (req, res) => {
   try {
     const exported = await exportCsr(req.params.csrId);
     res.status(200).json(exported);
+  } catch (error) {
+    handleError(error, res);
+  }
+};
+
+export const listCsrsSummaryController = async (_req, res) => {
+  try {
+    const csrs = await getCsrsSummary();
+    res.status(200).json(csrs);
   } catch (error) {
     handleError(error, res);
   }
