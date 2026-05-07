@@ -33,6 +33,7 @@ import {
   writeTextFile,
 } from "../utils/storage.js";
 import { getValidityDays } from "../utils/validity.js";
+import {sendExpiryMail} from "./mailService.js";
 
 const normalizeSans = (sanList, commonName) => {
   const uniqueSans = Array.from(
@@ -247,6 +248,19 @@ export const signCsrWithCa = async (csrId, payload) => {
     signedCertificateId: certificate.cert_id,
     caId: ca.ca_id,
   });
+
+  if (validityDays <= 7) {
+    const emailMatch = csr.subject_dn?.match(/emailAddress=([^,\s]+)/);
+    const email = emailMatch?.[1];
+
+    if (email) {
+      sendExpiryMail({
+        email,
+        common_name: csr.common_name,
+        expires_at: metadata.expiresAt,
+      }).catch(e => console.error("Échec de l'envoi du mail:", e.message));
+    }
+  }
 
   return {
     csr_id: csrId,
